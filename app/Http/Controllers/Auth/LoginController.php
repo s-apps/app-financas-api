@@ -21,7 +21,7 @@ class LoginController extends Controller
 
         if($validator->fails() || !$user || !Hash::check($request->password, $user->password)){
             return response()->json([
-                'message' => 'Invalid data!'
+                'message' => 'Dados inválidos!'
             ], 400);
         }
 
