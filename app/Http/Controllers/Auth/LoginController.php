@@ -3,37 +3,26 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Validator;
 
 class LoginController extends Controller
 {
     public function login(Request $request){
-        $validator = Validator::make($request->all(), [
-            'email' => 'required|email|string',
-            'password' => 'required|string'
-        ]);
-
-        $user = User::where('email', $request->email)->first();
-
-        if($validator->fails() || !$user || !Hash::check($request->password, $user->password)){
+        if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
+            $user = Auth::user();
             return response()->json([
-                'message' => 'Dados inválidos!'
-            ], 400);
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'token' => $user->createToken('mytoken')->plainTextToken
+                ]
+            ], 200);
         }
-
-        $token = $user->createToken('mytoken')->plainTextToken;
-
         return response()->json([
-            'user' => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email
-            ],
-            'token' => $token
-        ], 200);
+            'message' => 'Dados inválidos!'
+        ], 400);
     }
 }
